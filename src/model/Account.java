@@ -25,11 +25,40 @@ public class Account {
         Random randomCardNumber = new Random();
         StringBuilder number = new StringBuilder();
         String BIN = "400000";
-        int checksum = 0;
+        int checksum;
         for (int i = 0; i < 9; i++) {
             number.append(randomCardNumber.nextInt(10));
         }
-        return BIN + number +checksum;
+        String s = BIN + number;
+        //Luhn algorithm
+        char[] charArr = new char[15];
+        charArr = s.toCharArray();
+
+        int[] nArr = new int[15];
+
+        for (int i = 0; i < charArr.length; i++) {
+            nArr[i] = Character.getNumericValue(charArr[i]);
+
+        }
+        int sum = 0;
+        for (int i = 0; i < nArr.length; i++) {
+            if (i == 0 || i % 2 == 0) {
+                int digit = 2 * nArr[i];
+                if (digit > 9) {
+                    digit -= 9;
+                }
+                sum += digit;
+            } else {
+                sum += nArr[i];
+            }
+        }
+        if (sum % 10 == 0) {
+            checksum = 0;
+        } else {
+            checksum = 10 - sum % 10;
+        }
+
+        return BIN + number + checksum;
     }
 
     //functions
