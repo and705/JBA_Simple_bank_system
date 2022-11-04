@@ -1,13 +1,26 @@
-package service;
+package controller;
 
 
 import model.Account;
+import service.DbService;
 
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class BankService {
-    public void main(){
+ //get data from args, check for extension
+    public void main(String[] args){
+        String fileName = getDbName(args);
+        if (fileName == null){
+            return;
+        }
+// create new db
+
+        DbService.createNewDatabase(fileName);
+        DbService.createNewTableCard();
+
+
+
         ArrayList <Account> base = new ArrayList<>();
         Scanner scanner = new Scanner(System.in);
         while (true) {
@@ -34,7 +47,8 @@ public class BankService {
                     break;
                 case 1:
                     Account newUser = new Account();
-                    base.add(newUser);
+                    DbService.saveAccount(newUser);
+                    //base.add(newUser);
                     System.out.printf("\nYour card has been created\n" +
                             "Your card number:\n%s\n" +
                             "Your card PIN:\n%s\n\n", newUser.getCardNumber(),
@@ -45,8 +59,8 @@ public class BankService {
                     String number = scanner.next();
                     System.out.println("Enter your PIN:");
                     String pin = scanner.next();
-                    Account user = new Account(number,pin, 0);
-                    if (base.contains(user)) {
+                    Account user = DbService.getAccount(number, pin);
+                    if (user != null) {
                         System.out.println("You have successfully logged in!\n");
                         boolean submenu = true;
                         while (submenu) {
@@ -61,7 +75,7 @@ public class BankService {
                                     exit();
                                     break;
                                 case 1:
-                                    System.out.println("Balance: " + base.get(base.indexOf(user)).getBalance() + "\n");
+                                    System.out.println("Balance: " + user.getBalance() + "\n");
                                     break;
 
                                 case 2:
@@ -83,6 +97,19 @@ public class BankService {
     public void exit(){
         System.out.println("Bye!");
         System.exit(0);
+    }
+
+    private String getDbName(String[] args) {
+        String DbName = null;
+        if (!args[0].toLowerCase().equals("-filename")) {
+            System.out.println("Wrong command");
+            return DbName;
+        }
+        if (!args[1].matches("\\w+\\.s3db")) {      //w+ alphaliteral one or more times (RegEx)
+            System.out.println("Wrong file name extension");
+            return DbName;
+        }
+        return args[1];
     }
 }
 

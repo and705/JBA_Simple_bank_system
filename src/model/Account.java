@@ -107,6 +107,15 @@ public class Account {
     }
 
     @Override
+    public String toString() {
+        return "Account{" +
+                "cardNumber='" + cardNumber + '\'' +
+                ", pin='" + pin + '\'' +
+                ", balance=" + balance +
+                '}';
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(cardNumber, pin);
     }
