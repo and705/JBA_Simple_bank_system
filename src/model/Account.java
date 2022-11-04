@@ -119,4 +119,29 @@ public class Account {
     public int hashCode() {
         return Objects.hash(cardNumber, pin);
     }
+
+    public static boolean checkCardNumberWithLuhnAlgorithm(String card) {
+        if (card.length() != 16) {
+            return false;
+        }
+        char[] charArray = card.toCharArray();
+        int[] nArr = new int[15];
+        int sum = 0;
+        int checksum = Character.getNumericValue(charArray[15]);
+        for (int i = 0; i < 15; i++) {
+            nArr[i] = Character.getNumericValue(charArray[i]);
+        }
+        for (int i = 0; i < nArr.length; i++) {
+            if (i == 0 || i % 2 == 0) {
+                int num = 2 * nArr[i];
+                if (num > 9) {
+                    num -= 9;
+                }
+                sum += num;
+            } else {
+                sum += nArr[i];
+            }
+        }
+        return (sum + checksum) % 10 == 0;
+    }
 }

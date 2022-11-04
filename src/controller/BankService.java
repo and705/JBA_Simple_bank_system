@@ -66,7 +66,10 @@ public class BankService {
                         while (submenu) {
 
                             System.out.println( "1. Balance\n" +
-                                                "2. Log out\n" +
+                                                "2. Add income\n" +
+                                                "3. Do transfer\n" +
+                                                "4. Close account\n" +
+                                                "5. Log out\n" +
                                                 "0. Exit\n");
                             int state2 = scanner.nextInt();
 
@@ -75,10 +78,64 @@ public class BankService {
                                     exit();
                                     break;
                                 case 1:
+                                    user = DbService.getAccount(number, pin);
                                     System.out.println("Balance: " + user.getBalance() + "\n");
                                     break;
 
                                 case 2:
+                                    System.out.println("Enter income:");
+                                    String income = scanner.next();
+                                    addIncome(user.getCardNumber(), income);
+                                    break;
+
+                                case 3:
+                                    System.out.println("Transfer\nEnter card number:");
+                                    String cardNumber = scanner.next();
+                                    if (cardNumber == null) break;
+                                    if (user.getCardNumber().equals(cardNumber)) {
+                                        System.out.println("You can't transfer money to the same account!\n");
+                                        break;
+                                    }
+                                    if (!Account.checkCardNumberWithLuhnAlgorithm(cardNumber)) {
+                                        System.out.println("Probably you made mistake in the card number. Please try again!\n");
+                                        break;
+                                    }
+                                    if (!DbService.checkUser(cardNumber)) {
+                                        System.out.println("Such a card does not exist.\n");
+                                        break;
+                                    }
+
+                                    System.out.println("Enter how much money you want to transfer:");
+                                    String input = scanner.next();
+                                    int money;
+                                    if (input != null) {
+                                        try {
+                                            money = Integer.parseInt(input);
+                                        } catch (NumberFormatException e) {
+                                            System.out.println("Print a number");
+                                            break;
+                                        }
+                                    } else break;
+                                    if (money > DbService.getAccount(user.getCardNumber(), user.getPin()).getBalance()) {
+                                        System.out.println("Not enough money!\n");
+                                        break;
+                                    }
+                                    if (money < 0) {
+                                        System.out.println("Print positive value\n");
+                                        break;
+                                    }
+                                    DbService.transfer(cardNumber, money);
+                                    DbService.subIncome(user.getCardNumber(), money);
+                                    System.out.println("Success!\n");
+                                    break;
+
+                                case 4:
+                                    DbService.closeAccount(user.getCardNumber());
+                                    System.out.println("The account has been closed!\n");
+                                    submenu =false;
+                                    break;
+
+                                case 5:
                                     System.out.println("You have successfully logged out!");
                                     submenu =false;
                                     break;
@@ -95,6 +152,7 @@ public class BankService {
         }
     }
     public void exit(){
+        DbService.closeDbConnection();
         System.out.println("Bye!");
         System.exit(0);
     }
@@ -111,5 +169,34 @@ public class BankService {
         }
         return args[1];
     }
+
+    private void addIncome(String cardNumber, String input) {
+
+        int income;
+        if (input != null) {
+            try {
+                income = Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println("Print a number");
+                return;
+            }
+        } else {
+            return;
+        }
+        boolean result = false;
+        if (income >= 0) {
+            result = DbService.addIncome(cardNumber, income);
+        } else {
+            System.out.println("Income should be a positive value!\n");
+            return;
+        }
+        if (result) {
+            System.out.println("Income was added!\n");
+        } else {
+            System.out.println("Error adding income!\n");
+        }
+    }
+
+
 }
 
